@@ -163,7 +163,7 @@ aside {
 
 <div id="body">
 
-<h1>Syracuse Plow Data Dashboard</h1>
+<h2>Syracuse Plow Data Dashboard</h2>
 
 <p>Click on the Date or Time of Day charts to filter the plow activity data.</p>
 
@@ -199,9 +199,8 @@ d3.csv("CombinedPlowData_2018.csv", function(error, plows) {
 
   var nestByDate = d3.nest()
       .key(function(d) { return d3.time.day(d.date); });
-
   
-	for(var i = plows.length - 1; i >= 0; i--) {
+  for(var i = plows.length - 1; i >= 0; i--) {
 		if(plows[i].activity_type.trim() === "") {
 		plows.splice(i, 1);
 		}
