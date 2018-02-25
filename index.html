@@ -3,7 +3,7 @@
 <title>Syracuse Plow Data Dashboard</title>
 <style>
 
-@import url(http://fonts.googleapis.com/css?family=Yanone+Kaffeesatz:400,700);
+@import url(http://fonts.googleapis.com/css?family=Permanent+Marker:400,700);
 
 body {
   font-family: "Helvetica Neue";
@@ -37,7 +37,7 @@ h2 {
 }
 
 h1, h2 {
-  font-family: "Yanone Kaffeesatz";
+  font-family: "Permanent Marker";
   text-rendering: optimizeLegibility;
 }
 
@@ -92,7 +92,7 @@ h1, h2 {
 }
 
 #hour-chart {
-  width: 920px;
+  width: 300px;
 }
 
 #delay-chart {
@@ -144,9 +144,9 @@ h1, h2 {
 
 aside {
   position: absolute;
-  left: 695px;
+  left: 510px;
   font-size: smaller;
-  width: 260px;
+  width: 410px;
 }
 
 .truck_name {width:50px;}
@@ -165,20 +165,30 @@ aside {
 
 <h2>Syracuse Plow Data Dashboard</h2>
 
-<p>Click on the Date or Time of Day charts to filter the plow activity data.</p>
+<p>This dashboard shows activity for Syracuse snowplows on January 3rd, 4th and 7th. The activities can be viewed by time of day, truck number, or date to help identify patterns in activity that might be helpful
+to improve the snow removal process. The top 50 activities for the matching Date, Time, and Trucks selected are displayed below the charts.
+</p>
 
-<p>Top 50 Records for the matching Date/Time are displayed below the charts.</p>
+<p>You can change the ranges of the charts by clicking on each one, holding your mouse button down, and using the "handles" that appear to define a range you would like to view. This will filter the data to only include the information for the selection you have made.</p>
+
+<p>By filtering the charts, you see activity information for things like the <a href="javascript:filter([[0,8], null, null])">Early Shift (Midnight to 8AM)</a> or  <a href="javascript:filter([[16,24], null, null])">Night Shift (4 to Midnight)</a>. You could also look at only <a href="javascript:filter([null, [263,264], null])">Truck #263</a>, or just see <a href="javascript:filter([null, null, [new Date(2018, 0, 7), new Date(2018, 0, 8)]])">January 7th</a>. You can see that for each selection you make, all three charts update to only include the filtered information.</p>
+
+<p>These charts can be used to help analyze problems like: Why did all of the trucks have so many "Stop Moving" events between 8AM and 10AM? Why do certain trucks have significantly more activity than others? What time periods have the most activity, and what can be done to reduce impact on traffic during those times?</p>
 
 <div id="charts">
   <div id="hour-chart" class="chart">
-    <div class="title">Time of Day</div>
+    <div class="title">Activity By Time of Day</div>
+  </div>
+    <div id="truck-chart" class="chart">
+    <div class="title">Activity By Truck Number</div>
   </div>
   <div id="date-chart" class="chart">
-    <div class="title">Date</div>
-  </div>
+    <div class="title">Activity By Date</div>
+  </div>  
+
 </div>
 
-<aside id="totals"><span id="active">-</span> of <span id="total">-</span> plow activities selected.</aside>
+<aside id="totals"><span id="active">-</span> of <span id="total">-</span> plow activities selected. The top 50 activities appear below:</aside>
 
 <div id="lists">
   <div id="plow-list" class="list"></div>
@@ -203,8 +213,10 @@ d3.csv("CombinedPlowData_2018.csv", function(error, plows) {
       .key(function(d) { return d3.time.day(d.date); });
   
   for(var i = plows.length - 1; i >= 0; i--) {
-		if(plows[i].activity_type.trim() === "") {
-		plows.splice(i, 1);
+	if (plows[i].activity_type != null) {
+			if (plows[i].activity_type.trim() === "") {
+				plows.splice(i, 1);
+			}
 		}
 	}
   
@@ -224,8 +236,14 @@ d3.csv("CombinedPlowData_2018.csv", function(error, plows) {
       dates = date.group(d3.time.day),
       hour = plow.dimension(function(d) { return d.date.getHours() + d.date.getMinutes() / 60; }),
       hours = hour.group(Math.floor);
+	  truck = plow.dimension(function(d) { return d.truck_name }),
+      trucks = truck.group(Math.floor);
+	  
+
 
   var charts = [
+  
+
 
     barChart()
         .dimension(hour)
@@ -233,15 +251,24 @@ d3.csv("CombinedPlowData_2018.csv", function(error, plows) {
       .x(d3.scale.linear()
         .domain([0, 24])
         .rangeRound([0, 10 * 24])),
+		
+	barChart()
+        .dimension(truck)
+        .group(trucks)
+      .x(d3.scale.linear()
+        .domain([170, 300])
+        .rangeRound([0, 10 * 58])),	
 
     barChart()
         .dimension(date)
         .group(dates)
         .round(d3.time.day.round)
       .x(d3.time.scale()
-        .domain([new Date(2018, 0, 1), new Date(2018, 2, 5)])
+        .domain([new Date(2018, 0, 1), new Date(2018, 1, 15)])
         .rangeRound([0, 10 * 90]))
-        .filter([new Date(2018, 0, 3), new Date(2018, 0, 5)])
+        .filter([new Date(2018, 0, 3), new Date(2018, 0, 4)]),
+		
+	
 
   ];
 
