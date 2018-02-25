@@ -3,7 +3,7 @@
 <title>Syracuse Plow Data Dashboard</title>
 <style>
 
-@import url(http://fonts.googleapis.com/css?family=Permanent+Marker:400,700);
+@import url(https://fonts.googleapis.com/css?family=Permanent+Marker:400,700);
 
 body {
   font-family: "Helvetica Neue";
@@ -153,9 +153,9 @@ aside {
 
 .time {width:80px;}
 
-.origin {width:200px;}
+.activity {width:200px;}
 
-.destination {width:400px;}
+.address {width:400px;}
 
 .heading {width:50px;}
 
@@ -198,8 +198,8 @@ to improve the snow removal process. The top 50 activities for the matching Date
 
 </div>
 
-<script src="crossfilter.v1.min.js"></script>
-<script src="d3.v3.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/crossfilter/1.3.12/crossfilter.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.3.3/d3.min.js"></script>
 <script>
 
 d3.csv("CombinedPlowData_2018.csv", function(error, plows) {
@@ -212,6 +212,7 @@ d3.csv("CombinedPlowData_2018.csv", function(error, plows) {
   var nestByDate = d3.nest()
       .key(function(d) { return d3.time.day(d.date); });
   
+  //remove records with no activity type
   for(var i = plows.length - 1; i >= 0; i--) {
 	if (plows[i].activity_type != null) {
 			if (plows[i].activity_type.trim() === "") {
@@ -225,9 +226,7 @@ d3.csv("CombinedPlowData_2018.csv", function(error, plows) {
 	var date = new Date(d.date_fixed);
 	var MsTime = date.getTime();
     d.date = parseDate(MsTime);	
-	d.origin = d.activity_type;
-	d.destination = d.address;
-	
+	d.activity = d.activity_type;	
   });
   
   var plow = crossfilter(plows),
@@ -237,14 +236,10 @@ d3.csv("CombinedPlowData_2018.csv", function(error, plows) {
       hour = plow.dimension(function(d) { return d.date.getHours() + d.date.getMinutes() / 60; }),
       hours = hour.group(Math.floor);
 	  truck = plow.dimension(function(d) { return d.truck_name }),
-      trucks = truck.group(Math.floor);
-	  
-
+      trucks = truck.group(Math.floor);	  
 
   var charts = [
   
-
-
     barChart()
         .dimension(hour)
         .group(hours)
@@ -266,10 +261,7 @@ d3.csv("CombinedPlowData_2018.csv", function(error, plows) {
       .x(d3.time.scale()
         .domain([new Date(2018, 0, 1), new Date(2018, 1, 15)])
         .rangeRound([0, 10 * 90]))
-        .filter([new Date(2018, 0, 3), new Date(2018, 0, 4)]),
-		
-	
-
+        .filter([new Date(2018, 0, 3), new Date(2018, 0, 4)]),		
   ];
 
   var chart = d3.selectAll(".chart")
@@ -342,12 +334,12 @@ d3.csv("CombinedPlowData_2018.csv", function(error, plows) {
           .text(function(d) { return d.strHeading; });
 
       plowEnter.append("div")
-          .attr("class", "origin")
-          .text(function(d) { return d.origin; });
+          .attr("class", "activity")
+          .text(function(d) { return d.activity; });
 
       plowEnter.append("div")
-          .attr("class", "destination")
-          .text(function(d) { return d.destination; });
+          .attr("class", "address")
+          .text(function(d) { return d.address; });
 		  
       plow.exit().remove();
 
